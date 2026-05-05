@@ -102,7 +102,6 @@ def ingest(raw_dir: Path, persist_dir: Path) -> IngestStats:
             continue
 
         try:
-            # Remove stale chunks for changed files
             if file_key in hash_store:
                 _delete_by_source(vector_store, file_key)
 

@@ -20,7 +20,6 @@ def _parse_module(path: Path) -> str:
     parent = path.parent.name
     if parent and parent.lower() not in ("raw", ".", ""):
         return parent
-    # Try 'cs101' prefix pattern in filename: 'cs101_week3_slides.pdf'
     match = re.match(r"([a-zA-Z]{2,}\d+)", path.stem)
     return match.group(1) if match else "unknown"
 
@@ -43,7 +42,7 @@ def load_pdf(path: Path) -> list[Document]:
     Returns:
         List of Documents, one per non-empty page.
     """
-    import fitz  # pymupdf
+    import fitz
 
     module = _parse_module(path)
     week = _parse_week(path)

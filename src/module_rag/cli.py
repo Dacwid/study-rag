@@ -69,7 +69,7 @@ def ingest(
 @app.command()
 def ask(
     question: Annotated[str, typer.Argument(help="Question to ask.")],
-    mode: Annotated[str, typer.Option(help="Retrieval mode.")] = "baseline",
+    mode: Annotated[str, typer.Option(help="Retrieval mode.")] = "hybrid+rerank",
     processed_dir: Annotated[
         str, typer.Option(help="Processed data directory.")
     ] = "data/processed",
@@ -90,15 +90,65 @@ def ask(
     processed_path = Path(processed_dir)
     settings = get_settings()
 
-    _IMPLEMENTED = {"baseline"}
-    if mode not in _IMPLEMENTED:
-        console.print(f"[yellow]Mode '{mode}' not yet implemented — using baseline.[/yellow]")
-        mode = "baseline"
+    _MODES = {
+        "baseline",
+        "hybrid",
+        "rerank",
+        "hybrid+rerank",
+        "hyde",
+        "multiquery",
+        "compression",
+        "parent",
+        "filter",
+    }
+    if mode not in _MODES:
+        console.print(f"[yellow]Unknown mode '{mode}' — using hybrid+rerank.[/yellow]")
+        mode = "hybrid+rerank"
 
     if mode == "baseline":
         from module_rag.retrieval.baseline import get_baseline_retriever
 
         retriever = get_baseline_retriever(processed_path)
+
+    elif mode == "hybrid":
+        from module_rag.retrieval.hybrid import get_hybrid_retriever
+
+        retriever = get_hybrid_retriever(processed_path)
+
+    elif mode == "rerank":
+        from module_rag.retrieval.reranker import get_reranker_retriever
+
+        retriever = get_reranker_retriever(processed_path)
+
+    elif mode == "hybrid+rerank":
+        from module_rag.retrieval.reranker import get_hybrid_rerank_retriever
+
+        retriever = get_hybrid_rerank_retriever(processed_path)
+
+    elif mode == "hyde":
+        from module_rag.retrieval.query_transform import get_hyde_retriever
+
+        retriever = get_hyde_retriever(processed_path)
+
+    elif mode == "multiquery":
+        from module_rag.retrieval.query_transform import get_multiquery_retriever
+
+        retriever = get_multiquery_retriever(processed_path)
+
+    elif mode == "compression":
+        from module_rag.retrieval.compression import get_compression_retriever
+
+        retriever = get_compression_retriever(processed_path)
+
+    elif mode == "parent":
+        from module_rag.retrieval.parent_doc import get_parent_doc_retriever
+
+        retriever = get_parent_doc_retriever(processed_path)
+
+    elif mode == "filter":
+        from module_rag.retrieval.metadata_filter import get_metadata_filter_retriever
+
+        retriever = get_metadata_filter_retriever(processed_path, use_llm_router=True)
 
     docs = retriever.invoke(question)
 
